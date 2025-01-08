@@ -1,39 +1,23 @@
 import serial
 import time
-from utils import amplitude, channel, unit, waveform, parameters
+from core.utils.utils import amplitude, channel, unit, waveform, parameters
+from core.serialHandler import SerialConnection
 from logger import test_logger
 
 DEBUG = True
 
-class JDS660SignalGenerator:
-
-    def __init__(self, port):
-        self.serial_connection = serial.Serial(
-            port=port,
-            baudrate=115200,
-            bytesize=serial.EIGHTBITS,
-            parity=serial.PARITY_NONE,
-            stopbits=serial.STOPBITS_ONE,
-            timeout=1
-        )
+class signalGenerator_write:
+    def __init__(self, serial_connection):
+        self.serial_connection = serial_connection
 
     def _send_command(self, command):
-        full_command = f"{command}\r\n"
-        if DEBUG: print(f"Sending command: {full_command.strip()}")  # Debug logging
-        if parameters.TEST: test_logger.info(f"Sending command: {full_command.strip()}")
-        self.serial_connection.write(full_command.encode())
-        time.sleep(0.1)  # Add a small delay to allow the device to process the command
-        response = self.serial_connection.read_until(b'\r\n').decode().strip()
-        if DEBUG: print(f"Received response: {response}")  # Debug logging
-        if parameters.TEST: test_logger.info(f"Received response: {response}")
-        return response
-
-    def get_serial_number(self):
-        return self._send_command(':r01=')
+        return self.serial_connection.send_command(command)
 
     def set_channel_enable(self, *channels):
         ch1 = 1 if channel.CH1 in channels else 0
         ch2 = 1 if channel.CH2 in channels else 0
+        if any(ch not in (channel.CH1, channel.CH2) for ch in channels):
+            raise ValueError("Invalid channel. Use channel.CH1 or channel.CH2.")
         if parameters.TEST: test_logger.info(f"Setting channel enable: CH1={ch1}, CH2={ch2}")
         return self._send_command(f':w20={ch1},{ch2}.')
 
@@ -42,11 +26,15 @@ class JDS660SignalGenerator:
             raise ValueError("Invalid waveform. Use a value between 0 and 16.")
         if parameters.TEST: test_logger.info(f"Setting waveform: Channel={channel_num}, Waveform={waveform}")
         if channel_num == channel.CH1:
-            return self._send_command(f':w21={waveform}.')
+            command = f':w21={waveform}.'
         elif channel_num == channel.CH2:
-            return self._send_command(f':w22={waveform}.')
+            command = f':w22={waveform}.'
         else:
             raise ValueError("Invalid channel. Use channel.CH1 or channel.CH2.")
+        if parameters.TEST: test_logger.info(f"Sending command: {command}")
+        response = self._send_command(command)
+        if parameters.TEST: test_logger.info(f"Response for set_waveform: {response}")
+        return response
 
     def set_arbitrary_waveform(self, channel_num, waveform_num):
         if not (1 <= waveform_num <= 60):
@@ -60,20 +48,17 @@ class JDS660SignalGenerator:
             raise ValueError("Invalid channel. Use channel.CH1 or channel.CH2.")
 
     def set_frequency(self, channel_num, frequency, freq_unit):
-        if freq_unit not in [unit.HZ, unit.KHZ, unit.MHZ, unit.MILLI_HZ, unit.MICRO_HZ]:
+        valid_units = [unit.HZ, unit.KHZ, unit.MHZ, unit.MILLI_HZ, unit.MICRO_HZ]
+        if freq_unit not in valid_units:
             raise ValueError("Invalid unit. Use unit.HZ, unit.KHZ, unit.MHZ, unit.MILLI_HZ, or unit.MICRO_HZ.")
+        
         # Frequency limits
-        if freq_unit == unit.HZ or freq_unit == unit.KHZ or freq_unit == unit.MHZ:
-            if frequency > 60000000:
-                raise ValueError("Maximum frequency using unit {} is 60 MHz.".format(freq_unit))
-        elif freq_unit == unit.MILLI_HZ:
-            if frequency > 80000:
-                raise ValueError("Maximum frequency using unit 3 is 80 KHz.")
-        elif freq_unit == unit.MICRO_HZ:
-            if frequency > 80:
-                raise ValueError("Maximum frequency using unit 4 is 80 Hz.")
-        else:
-            raise ValueError("Invalid unit value.")
+        if freq_unit in [unit.HZ, unit.KHZ, unit.MHZ] and frequency > 60000000:
+            raise ValueError("Maximum frequency using unit {} is 60 MHz.".format(freq_unit))
+        elif freq_unit == unit.MILLI_HZ and frequency > 80000:
+            raise ValueError("Maximum frequency using unit 3 is 80 KHz.")
+        elif freq_unit == unit.MICRO_HZ and frequency > 80:
+            raise ValueError("Maximum frequency using unit 4 is 80 Hz.")
 
         # Frequency multiplier
         freq_conversion_factors = (1, 1, 1, 1/1000, 1/1000000)

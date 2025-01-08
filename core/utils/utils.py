@@ -1,6 +1,10 @@
 class parameters:
-    DEBUG = True
+    DEBUG = False
     TEST = True
+
+class device:
+    DEVICETYPE=0
+    SERIALNUMBER=1
 
 class channel:
     # Channel numbers

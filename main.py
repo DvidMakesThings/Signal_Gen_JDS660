@@ -1,26 +1,31 @@
 import sys
-import time
 import serial
-from JDS import JDS660SignalGenerator
-from utils import parameters, unit, waveform, channel, amplitude
-from logger import test_logger
+from core.serialHandler import SerialConnection
+from core.utils.utils import channel, unit
+from core.device.readFunctions import signalGenerator_read
+from core.device.writeFunctions import signalGenerator_write
 
 def main():
-    # Initialize serial connection
     try:
-        signal_gen = JDS660SignalGenerator('COM2')  # Adjust 'COM2' as needed
-        print("Serial port opened successfully.")
-    except serial.SerialException as e:
-        print(f"Failed to open serial port: {e}")
+        serial_conn = SerialConnection('COM2')  # Adjust 'COM2' as needed
+    except serial.SerialException:
         sys.exit(1)
 
+    signal_gen_read = signalGenerator_read(serial_conn)
+    signal_gen_write = signalGenerator_write(serial_conn)
+
     # Read the serial number
-    serial_number = signal_gen.get_serial_number()
+    serial_number = signal_gen_read.getSerialnumber()
     print("Serial Number:", serial_number)
+    device_type = signal_gen_read.getDevicetype()
+    print("Device:", device_type)
 
     if not serial_number:
         print("Failed to get serial number. Exiting.")
         sys.exit(1)
+    
+    print(signal_gen_write.set_frequency(channel.CH1, 500, unit.KHZ))
+    print(signal_gen_read.getFrequency(channel.CH1))
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
