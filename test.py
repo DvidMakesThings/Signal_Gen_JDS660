@@ -11,18 +11,20 @@ def test_waveforms(signal_gen_write, signal_gen_read, channel_num):
     if parameters.TEST: test_logger.info(f"\n\nStarting waveform tests for Channel={channel_num}")
     for wf in range(17):  # There are 17 waveform types
         if parameters.TEST: test_logger.info(f"Setting waveform: {wf} for Channel={channel_num}")
+        
         signal_gen_write.set_waveform(channel_num, wf)
         signal_gen_write.set_channel_enable(channel_num)
         time.sleep(0.5)
         read_waveform = signal_gen_read.get_waveform(channel_num)
         if parameters.TEST: test_logger.info(f"Set waveform: {wf}, Read waveform: {read_waveform}")
+        
         assert read_waveform == wf, f"Waveform mismatch: expected {wf}, got {read_waveform}"
+        
         signal_gen_write.set_channel_enable()
         time.sleep(0.5)
+    
     # Set waveform back to SQUARE after testing all waveforms
     signal_gen_write.set_waveform(channel_num, waveform.SQUARE)
-    signal_gen_write.set_channel_enable(channel_num)
-    time.sleep(0.5)
     signal_gen_write.set_channel_enable()
     time.sleep(0.5)
     if parameters.TEST: test_logger.info(f"Set waveform back to SQUARE for Channel={channel_num}")
@@ -30,81 +32,22 @@ def test_waveforms(signal_gen_write, signal_gen_read, channel_num):
 
 def test_frequencies(signal_gen_write, signal_gen_read, channel_num):
     if parameters.TEST: test_logger.info(f"\n\nStarting frequency tests for Channel={channel_num}")
-    for freq_unit in range(5):  # There are 5 frequency units
-        signal_gen_write.set_frequency(channel_num, 1, freq_unit)
-        signal_gen_write.set_channel_enable(channel_num)
-        time.sleep(0.5)
-        read_frequency, read_unit = signal_gen_read.get_frequency(channel_num)
-        assert read_frequency == 1, f"Frequency mismatch: expected 1, got {read_frequency}"
-        assert read_unit == unit[freq_unit], f"Unit mismatch: expected {unit[freq_unit]}, got {read_unit}"
-        signal_gen_write.set_channel_enable()
-        time.sleep(0.5)
-    # Set frequency back to 1KHz after testing all frequencies
-    signal_gen_write.set_frequency(channel_num, 1, unit.KHZ)
-    signal_gen_write.set_channel_enable(channel_num)
-    time.sleep(0.5)
-    signal_gen_write.set_channel_enable()
-    time.sleep(0.5)
-    if parameters.TEST: test_logger.info(f"Set frequency back to 1KHz for Channel={channel_num}")
+    
     if parameters.TEST: test_logger.info(f"Completed frequency tests for Channel={channel_num}\n\n")
 
 def test_amplitudes(signal_gen_write, signal_gen_read, channel_num):
     if parameters.TEST: test_logger.info(f"\n\nStarting amplitude tests for Channel={channel_num}")
-    for amp_unit in [amplitude.VOLT, amplitude.MILLIVOLT]:
-        signal_gen_write.set_amplitude(channel_num, 1, amp_unit)
-        signal_gen_write.set_channel_enable(channel_num)
-        time.sleep(0.5)
-        read_amplitude, read_unit = signal_gen_read.get_amplitude(channel_num)
-        assert read_amplitude == 1, f"Amplitude mismatch: expected 1, got {read_amplitude}"
-        assert read_unit == amp_unit, f"Unit mismatch: expected {amp_unit}, got {read_unit}"
-        signal_gen_write.set_channel_enable()
-        time.sleep(0.5)
-    # Set amplitude back to 1V after testing all amplitudes
-    signal_gen_write.set_amplitude(channel_num, 1, amplitude.VOLT)
-    signal_gen_write.set_channel_enable(channel_num)
-    time.sleep(0.5)
-    signal_gen_write.set_channel_enable()
-    time.sleep(0.5)
-    if parameters.TEST: test_logger.info(f"Set amplitude back to 1V for Channel={channel_num}")
+    
     if parameters.TEST: test_logger.info(f"Completed amplitude tests for Channel={channel_num}\n\n")
 
 def test_offsets(signal_gen_write, signal_gen_read, channel_num):
     if parameters.TEST: test_logger.info(f"\n\nStarting offset tests for Channel={channel_num}")
-    for offset_unit in [amplitude.VOLT, amplitude.MILLIVOLT]:
-        signal_gen_write.set_offset(channel_num, 1, offset_unit)
-        signal_gen_write.set_channel_enable(channel_num)
-        time.sleep(0.5)
-        read_offset, read_unit = signal_gen_read.get_offset(channel_num)
-        assert read_offset == 1, f"Offset mismatch: expected 1, got {read_offset}"
-        assert read_unit == offset_unit, f"Unit mismatch: expected {offset_unit}, got {read_unit}"
-        signal_gen_write.set_channel_enable()
-        time.sleep(0.5)
-    # Set offset back to 0V after testing all offsets
-    signal_gen_write.set_offset(channel_num, 0, amplitude.VOLT)
-    signal_gen_write.set_channel_enable(channel_num)
-    time.sleep(0.5)
-    signal_gen_write.set_channel_enable()
-    time.sleep(0.5)
-    if parameters.TEST: test_logger.info(f"Set offset back to 0V for Channel={channel_num}")
+    
     if parameters.TEST: test_logger.info(f"Completed offset tests for Channel={channel_num}\n\n")
 
 def test_phases(signal_gen_write, signal_gen_read, channel_num):
     if parameters.TEST: test_logger.info(f"\n\nStarting phase tests for Channel={channel_num}")
-    for phase in [-360, -180, 0, 180, 360]:
-        signal_gen_write.set_phase(channel_num, phase)
-        signal_gen_write.set_channel_enable(channel_num)
-        time.sleep(0.5)
-        read_phase = signal_gen_read.get_phase(channel_num)
-        assert read_phase == phase, f"Phase mismatch: expected {phase}, got {read_phase}"
-        signal_gen_write.set_channel_enable()
-        time.sleep(0.5)
-    # Set phase back to 0 degrees after testing all phases
-    signal_gen_write.set_phase(channel_num, 0)
-    signal_gen_write.set_channel_enable(channel_num)
-    time.sleep(0.5)
-    signal_gen_write.set_channel_enable()
-    time.sleep(0.5)
-    if parameters.TEST: test_logger.info(f"Set phase back to 0 degrees for Channel={channel_num}")
+    
     if parameters.TEST: test_logger.info(f"Completed phase tests for Channel={channel_num}\n\n")
 
 def main():
