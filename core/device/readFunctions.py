@@ -14,6 +14,10 @@ class signalGenerator_read:
     def getSerialnumber(self) -> str:
         response = self._send_command(':r00=')
         return response.strip()
+    
+    def getDevicetype(self) -> str:
+        response = self._send_command(':r01=')
+        return response.strip()
 
     def get_channel_enable(self) -> tuple[bool, bool]:
         response = self._send_command(':r20=')
@@ -53,10 +57,18 @@ class signalGenerator_read:
         else:
             raise ValueError("Invalid channel. Use channel.CH1 or channel.CH2.")
         
+        # Log the response for debugging
+        if parameters.TEST: test_logger.info(f"Response for get_frequency: {response}")
+        
         # Parse the response
         try:
-            freq, freq_unit = map(int, response.strip().split(','))
-        except ValueError:
+            value = response.split('=')[1].strip().strip('.')
+            if ',' in value:
+                freq, freq_unit = map(int, value.split(','))
+            else:
+                freq = int(value)
+                freq_unit = 0  # Default to Hz if no unit is provided
+        except (IndexError, ValueError):
             raise ValueError("Invalid response format.")
         
         # Frequency multiplier

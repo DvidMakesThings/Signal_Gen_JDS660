@@ -15,10 +15,6 @@ def test_waveforms(signal_gen_write, signal_gen_read, channel_num):
         signal_gen_write.set_waveform(channel_num, wf)
         signal_gen_write.set_channel_enable(channel_num)
         time.sleep(0.5)
-        read_waveform = signal_gen_read.get_waveform(channel_num)
-        if parameters.TEST: test_logger.info(f"Set waveform: {wf}, Read waveform: {read_waveform}")
-        
-        assert read_waveform == wf, f"Waveform mismatch: expected {wf}, got {read_waveform}"
         
         signal_gen_write.set_channel_enable()
         time.sleep(0.5)

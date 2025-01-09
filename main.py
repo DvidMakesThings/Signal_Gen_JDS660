@@ -25,7 +25,7 @@ def main():
         sys.exit(1)
     
     print(signal_gen_write.set_frequency(channel.CH1, 500, unit.KHZ))
-    print(signal_gen_read.getFrequency(channel.CH1))
+    print(signal_gen_read.get_frequency(channel.CH1))
 
 if __name__ == '__main__':
     main()
