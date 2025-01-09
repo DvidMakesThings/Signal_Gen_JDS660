@@ -1,5 +1,5 @@
 class parameters:
-    DEBUG = False
+    DEBUG = True
     TEST = True
 
 class device:
