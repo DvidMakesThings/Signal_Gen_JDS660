@@ -47,27 +47,19 @@ class signalGenerator_write:
         else:
             raise ValueError("Invalid channel. Use channel.CH1 or channel.CH2.")
 
-    def set_frequency(self, channel_num, frequency, freq_unit):
-        valid_units = [unit.HZ, unit.KHZ, unit.MHZ, unit.MILLI_HZ, unit.MICRO_HZ]
-        if freq_unit not in valid_units:
-            raise ValueError("Invalid unit. Use unit.HZ, unit.KHZ, unit.MHZ, unit.MILLI_HZ, or unit.MICRO_HZ.")
-        
-        # Frequency limits
-        if freq_unit in [unit.HZ, unit.KHZ, unit.MHZ] and frequency > 60000000:
-            raise ValueError("Maximum frequency using unit {} is 60 MHz.".format(freq_unit))
-        elif freq_unit == unit.MILLI_HZ and frequency > 80000:
-            raise ValueError("Maximum frequency using unit 3 is 80 KHz.")
-        elif freq_unit == unit.MICRO_HZ and frequency > 80:
-            raise ValueError("Maximum frequency using unit 4 is 80 Hz.")
+    def set_frequency(self, channel_num, frequency, unit):
+        # Convert the frequency to Hz
+        frequency_in_hz = frequency * unit
 
-        # Frequency multiplier
-        freq_conversion_factors = (1, 1, 1, 1/1000, 1/1000000)
+        # Frequency limits for Hz
+        if frequency_in_hz > 60000000:
+            raise ValueError("Maximum frequency is 60 MHz.")
 
         # Round to nearest 0.01 value and calculate the frequency value
-        freq = int(round(frequency * 100 / freq_conversion_factors[freq_unit]))
-        value = f"{freq},{freq_unit}"
+        freq = int(round(frequency_in_hz * 100))
+        value = f"{freq},0"  # 0 corresponds to Hz
 
-        if parameters.TEST: test_logger.info(f"Setting frequency: Channel={channel_num}, Frequency={frequency}, Unit={freq_unit}")
+        if parameters.TEST: test_logger.info(f"Setting frequency: Channel={channel_num}, Frequency={frequency_in_hz} Hz")
         if channel_num == channel.CH1:
             return self._send_command(f':w23={value}.')
         elif channel_num == channel.CH2:

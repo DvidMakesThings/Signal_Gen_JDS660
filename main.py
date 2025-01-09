@@ -1,7 +1,7 @@
 import sys
 import serial
 from core.serialHandler import SerialConnection
-from core.utils.utils import channel, unit
+from core.utils.utils import channel, unit, amplitude
 from core.device.readFunctions import signalGenerator_read
 from core.device.writeFunctions import signalGenerator_write
 
@@ -24,8 +24,7 @@ def main():
         print("Failed to get serial number. Exiting.")
         sys.exit(1)
     
-    print(signal_gen_write.set_frequency(channel.CH1, 500, unit.KHZ))
-    print(signal_gen_read.get_frequency(channel.CH1))
+    signal_gen_write.set_offset(channel.CH1, 0, amplitude.VOLT)
 
 if __name__ == '__main__':
     main()

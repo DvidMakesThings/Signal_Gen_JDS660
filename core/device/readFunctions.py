@@ -63,22 +63,28 @@ class signalGenerator_read:
         # Parse the response
         try:
             value = response.split('=')[1].strip().strip('.')
-            if ',' in value:
-                freq, freq_unit = map(int, value.split(','))
-            else:
-                freq = int(value)
-                freq_unit = 0  # Default to Hz if no unit is provided
+            freq, freq_unit = map(int, value.split(','))
         except (IndexError, ValueError):
             raise ValueError("Invalid response format.")
         
         # Frequency multiplier
-        freq_conversion_factors = (1, 1, 1, 1/1000, 1/1000000)
-        freq_units = ["Hz", "KHz", "MHz", "mHz", "uHz"]
+        freq_conversion_factors = (1, 1000, 1000000)
+        freq_units = ["Hz", "kHz", "MHz"]
         
         # Calculate the frequency value
-        frequency = freq * freq_conversion_factors[freq_unit] / 100
+        frequency = freq / 100
         
-        return frequency, freq_units[freq_unit]
+        # Determine the unit and convert the frequency
+        if frequency >= 1000000:
+            frequency /= 1000000
+            unit = "MHz"
+        elif frequency >= 1000:
+            frequency /= 1000
+            unit = "kHz"
+        else:
+            unit = "Hz"
+        
+        return frequency, unit
 
     def get_amplitude(self, channel_num) -> tuple[float, str]:
         if channel_num == channel.CH1:

@@ -18,11 +18,9 @@ class amplitude:
 
 class unit:
     # Frequency units
-    HZ = 0
-    KHZ = 1
-    MHZ = 2
-    MILLI_HZ = 3
-    MICRO_HZ = 4
+    HZ = 1
+    KHZ = 1000
+    MHZ = 1000000
 
 class waveform:
     # Waveform types
